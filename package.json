@@ -1,0 +1,11 @@
+{
+  "name": "round-robin",
+  "version": "1.0.0",
+  "description": "Round-Robin Algorithm",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Aeol",
+  "license": "ISC"
+}
