@@ -1,20 +1,8 @@
 const { all, compose, curry, div, forEach, head, len, prop, set, map, print, reduce, round } = require('./funcs')
 const JobQueue = require('./job-queue')
-const Gantt    = require('./gantt')
+const Gantt = require('./gantt')
 
-/**
- * Documentation:
- *     get...            :: a -> b
- *     set...            :: a -> b -> a
- *     initRemainingTime :: a -> [a]
- *     jobIsComplete     :: a -> Boolean
- *     schedIsComplete   :: a -> Boolean
- *     removeRM          :: a -> ()
- *     calculate...      :: a -> Number
- *     record...         :: a -> ()
- *     accumulator       :: (a -> b) -> a -> b -> a
- *     roundRobin        :: (a, b) -> Object
- */
+/* Setters & Getters */
 const getPID            = prop('PID')
 const getAT             = prop('AT')
 const getBT             = prop('BT')
@@ -26,40 +14,48 @@ const setRM             = set('RM')
 const setCMP            = set('CMP')
 const setTT             = set('TT')
 const setWT             = set('WT')
+/* Jobs & Schedule */
 const initRemainingTime = (sched) => map((job) => setRM(job, getBT(job)), sched)
 const jobIsComplete     = (job) => getRM(job) === 0
 const schedIsComplete   = (sched) => all(jobIsComplete, sched)
 const removeRM          = (job) => delete job.RM
+/* TT & WT */
 const calculateTT       = (job) => getCMP(job) - getAT(job)
 const calculateWT       = (job) => getTT(job) - getBT(job)
 const recordTT          = (job) => setTT(job, calculateTT(job))
 const recordWT          = (job) => setWT(job, calculateWT(job))
+/* etc. */
 const accumulator       = curry((get, acc, curr) => get(curr) + acc)
 
-function roundRobin(rawSched, quantum) {
-    const schedule  = initRemainingTime(rawSched)
+function roundRobin(rawSchedData, quantum) {
+    const schedule  = initRemainingTime(rawSchedData)
     const schedSize = len(schedule)
     const queue     = new JobQueue()
-    let   gantt     = new Gantt()
-    let   time      = 0
-    let   q_time    = time + quantum
+    let gantt       = new Gantt()
+    let time        = 0
+    let q_time      = time + quantum
 
     const recordTime = (time) => gantt.record({
         time: time,
-        job:  getPID(queue.peek()) || 'None'
+        job: getPID(queue.peek()) || 'None'
     })
 
-    // Algotithm START
+    /*=Algorithm START============================================================================*/
     while (!(schedIsComplete(schedule))) {
+        // Check all jobs for their arrival time, if the their AT is the same with the current
+        // time, add to queue.
         forEach(job => {
             if (getAT(job) === time) {
                 queue.enqueue(job)
-                // Do not record job's arrival except for jobs with arrival time of zero
+
+                // Do not record job's arrival except for job/s with arrival time of zero.
                 if (time === 0) { recordTime(time) }
             }
         }, schedule)
 
         if (time < q_time) {
+            // if the current job finished before the Q-Time change the next Q-Time based on the
+            // current time.
             if (jobIsComplete(queue.peek())) {
                 job    = queue.dequeue()
                 q_time = time + quantum
@@ -70,6 +66,8 @@ function roundRobin(rawSched, quantum) {
 
             queue.decreaseCurrentJobRemainingTime()
         } else if (time === q_time) {
+            // if current job reaches the Q-Time put it at the back of the queue if not yet finished,
+            // otherwise remove it from the queue.
             job     = queue.dequeue()
             q_time += quantum
 
@@ -85,28 +83,27 @@ function roundRobin(rawSched, quantum) {
         time += 1
     }
 
+    // Finish and record the last job in the queue
     const lastJob = queue.dequeue()
-
     setCMP(lastJob, time)
     recordTime(time)
-    // Algorithm END
+    /*=Algorithm END==============================================================================*/
 
     forEach(removeRM, schedule)
     forEach(recordTT, schedule)
     forEach(recordWT, schedule)
 
-    // total :: ((a, b) -> a) -> Number
     const total   = (acc) => reduce(acc, 0, schedule)
+    // Compose average function:
     // Create accumulator -> Get total -> Divide by schedule size -> Round up to two decimal places
-    // average :: (a -> b) -> Number
     const average = compose(round(2), div(schedSize), total, accumulator)
 
     return {
         gantt: gantt.history,
-        data:  {
-            totalTime: time,
-            averageTT: average(getTT),
-            averageWT: average(getWT)
+        data: {
+            'Total Time': time,
+            'Average TT': average(getTT),
+            'Average WT': average(getWT)
         },
         sched: schedule
     }
