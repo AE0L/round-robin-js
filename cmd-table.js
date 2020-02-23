@@ -7,8 +7,8 @@ TLC = '\u250C' // ┌
 TRC = '\u2510' // ┐
 BLC = '\u2514' // └
 BRC = '\u2518' // ┘
-HSL = '\u2500' // ─
-VSL = '\u2502' // │
+HZL = '\u2500' // ─
+VTL = '\u2502' // │
 LRU = '\u2534' // ┴
 LRD = '\u252C' // ┬
 UDR = '\u251C' // ├
@@ -41,7 +41,7 @@ class CMDTable {
 
     _create_border(left, separator, right) {
         const margin = cat(this._margin, left)
-        const cell   = (a) => cat(HSL.repeat(a + 2), separator)
+        const cell   = (a) => cat(HZL.repeat(a + 2), separator)
         const row    = (a, b) => cat(a, cell(b))
         const border = backspace(reduce(row, margin, this._columns_width))
 
@@ -53,11 +53,11 @@ class CMDTable {
         const titleLength = len(this._title)
         const leftPad     = floor((cellWidth - titleLength) / 2)
         const rightPad    = cellWidth - titleLength - leftPad
-        const leftSide    = cat(this._margin, VSL, repeat(leftPad, ' '))
-        const rightSide   = cat(repeat(rightPad, ' '), VSL)
+        const leftSide    = cat(this._margin, VTL, repeat(leftPad, ' '))
+        const rightSide   = cat(repeat(rightPad, ' '), VTL)
         const title       = cat(leftSide, this._title, rightSide)
 
-        print(this._create_border(TLC, HSL, TRC))       // Top Border
+        print(this._create_border(TLC, HZL, TRC))       // Top Border
         print(title)                                    // Centered Title
         print(this._create_border(UDR, LRD, UDL))       // Separator
     }
@@ -65,11 +65,11 @@ class CMDTable {
     _display_row(row) {
         const rowValue   = getAt(row, this._rows)
         const valueRange = range(len(rowValue))
-        const leftMargin = cat(this._margin, VSL)
+        const leftMargin = cat(this._margin, VTL)
         const remaining  = (val, col) => getAt(col, this._columns_width) - len(toString(val))
         const value      = (row, col) => getAt(col, getAt(row, this._rows))
         const cell       = (val, col) => cat(' ', val, repeat(remaining(val, col), ' '), ' ')
-        const createCell = (row) => (acc, col) => cat(acc, cell(value(row, col), col), VSL)
+        const createCell = (row) => (acc, col) => cat(acc, cell(value(row, col), col), VTL)
 
         print(reduce(createCell(row), leftMargin, valueRange))
     }

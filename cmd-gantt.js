@@ -1,5 +1,11 @@
 const { backspace, cat, compose, forEach, len, map, print, prop, range, reduce, repeat, toString } = require('./funcs')
 
+HZL = '\u2500' // ─
+VTL = '\u2502' // │
+UDR = '\u251C' // ├
+UDL = '\u2524' // ┤
+CRS = '\u253C' // ┼
+
 class CMDGantt {
     constructor(schedule, interval, margin=0) {
         this._interval = interval
@@ -26,12 +32,12 @@ class CMDGantt {
         }, this._margin, range(len(times)))
 
         const lines = reduce((a, i) => {
-            last = len(times) - 1
+            const last = len(times) - 1
 
             switch (i) {
                 case 0:    return cat(a, UDR)
-                case last: return cat(a, repeat(len(jobs[i - 1]) + 2, HSL), UDL)
-                default:   return cat(a, repeat(len(jobs[i - 1]) + 2, HSL), CRS)
+                case last: return cat(a, repeat(len(jobs[i - 1]) + 2, HZL), UDL)
+                default:   return cat(a, repeat(len(jobs[i - 1]) + 2, HZL), CRS)
             }
         }, this._margin, range(len(times)))
 
