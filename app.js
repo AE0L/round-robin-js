@@ -1,6 +1,7 @@
 const { print, prop }  = require('./funcs')
 const roundRobin = require('./round-robin')
 const CMDTable   = require('./cmd-table')
+const CMDGantt   = require('./cmd-gantt')
 
 const schedData1 = [
     { PID: 'P1', AT: 0,   BT: 250 },
@@ -22,9 +23,14 @@ const quantum       = 3
 const result        = roundRobin(schedData2, quantum)
 const schedule      = prop('sched', result)
 const resultData    = prop('data', result)
+const gantt         = prop('gantt', result)
 
 const scheduleTable = new CMDTable(schedule, `Schedule Q=${quantum}`)
 const resultTable   = new CMDTable([resultData], 'Result')
+const ganttChart    = new CMDGantt(gantt, quantum)
 
 scheduleTable.display()
+print('')
 resultTable.display()
+print('')
+ganttChart.display()

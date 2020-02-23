@@ -1,6 +1,6 @@
 const {
     array, compose, floor, forEach, getAt, head, keys, len, log, map, max, print, range, reduce,
-    toString, values, repeat, cat
+    toString, values, repeat, cat, backspace,
 } = require('./funcs')
 
 TLC = '\u250C' // ┌
@@ -39,12 +39,13 @@ class CMDTable {
         return reduce((a, c) => a + c + 3, 1, this._columns_width)
     }
 
-    _create_border(left, sep, right) {
+    _create_border(left, separator, right) {
         const margin = cat(this._margin, left)
-        const cell   = (a) => cat(HSL.repeat(a + 2), sep)
+        const cell   = (a) => cat(HSL.repeat(a + 2), separator)
         const row    = (a, b) => cat(a, cell(b))
+        const border = backspace(reduce(row, margin, this._columns_width))
 
-        return cat(reduce(row, margin, this._columns_width), '\b', right)
+        return cat(border, right)
     }
 
     _display_title() {
